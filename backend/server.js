@@ -1,30 +1,33 @@
 const express = require('express');
 const cors = require('cors');
+
 const app = express();
-const port = process.env.PORT || "https://tp-exam-chat-wlby.onrender.com";
+const port = process.env.PORT || 3000;   // Render gives you the port via env var
 
-app.use(cors());  // Enable CORS for all routes
-app.use(express.json());  // Parse JSON bodies
+app.use(cors());
+app.use(express.json());
 
-let messages = [];  // In-memory storage
+let messages = [];
 
-// GET /api/messages - Return all messages
-app.get('https://tp-exam-chat-wlby.onrender.com/api/messages', (req, res) => {
+// Correct routes — NO full URL here!!!
+app.get('/api/messages', (req, res) => {
   res.json(messages);
 });
 
-// POST /api/messages - Add a new message
-app.post('https://tp-exam-chat-wlby.onrender.com/api/messages', (req, res) => {
+app.post('/api/messages', (req, res) => {
   const { author, content } = req.body;
   if (!author || !content) {
     return res.status(400).json({ error: 'Missing author or content' });
   }
-  const timestamp = new Date().toISOString();
-  const newMessage = { author, content, timestamp };
+  const newMessage = {
+    author,
+    content,
+    timestamp: new Date().toISOString()
+  };
   messages.push(newMessage);
   res.status(201).json(newMessage);
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on port ${port}`);
 });
