@@ -1,0 +1,39 @@
+# File: .github/workflows/ci.yml
+name: CI - Build & Test
+
+on:
+  push:
+    :
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Docker Buildx (better builder)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Build and start containers (this also runs the backend)
+      - name: Build and test with docker-compose
+        run: |
+          docker compose version
+          docker compose up --build --abort-on-container-exit --exit-code-from backend
+
+      # 4. Optional: simple health check to be 100% sure
+      - name: Health check - backend API
+        run: |
+          sleep 10
+          curl -f http://localhost:3000/api/messages || exit 1
+
+      # 5. Optional: check frontend is served correctly
+      - name: Health check - frontend
+        run: |
+          curl -f http://localhost:8080 || exit 1
