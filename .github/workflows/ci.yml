@@ -1,9 +1,7 @@
-# File: .github/workflows/ci.yml
 name: CI - Build & Test
 
 on:
   push:
-    :
     branches: [ main ]
   pull_request:
     branches: [ main ]
@@ -13,27 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Set up Docker Buildx (better builder)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 3. Build and start containers (this also runs the backend)
-      - name: Build and test with docker-compose
+      - name: Build and run containers
         run: |
           docker compose version
-          docker compose up --build --abort-on-container-exit --exit-code-from backend
+          docker compose up --build --abort-on-container-exit
 
-      # 4. Optional: simple health check to be 100% sure
-      - name: Health check - backend API
-        run: |
-          sleep 10
-          curl -f http://localhost:3000/api/messages || exit 1
+      - name: Wait a few seconds for services to start
+        run: sleep 15
 
-      # 5. Optional: check frontend is served correctly
-      - name: Health check - frontend
-        run: |
-          curl -f http://localhost:8080 || exit 1
+      - name: Test backend API
+        run: curl -f http://localhost:3000/api/messages || exit 1
+
+      - name: Test frontend is served
+        run: curl -f http://localhost:8080 || exit 1
